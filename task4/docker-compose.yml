@@ -1,0 +1,22 @@
+services: # One service = One container
+  backend: # Each container has its own set of ports (INTERNAL = RIGHT)
+    build:
+      context: "./back-end"  # Directory containing Dockerfile
+      dockerfile: Dockerfile  # Name of the Dockerfile (optional if named "Dockerfile")
+    ports:
+      - "5252:5252" # HOST_PORT = APP_PORT = MACHINE_PORT : CONTAINER_PORT = INTERNAL_PORT
+    healthcheck: # healthchecks are made before starting frontend up to four tries total
+      test: ["CMD", "curl", "-f", "http://localhost:5252/api/hello"] # test proceedure is a curl request !!! ROUTE HAS TO EXIST !!!
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000" # Could be 9000:5252, because separate containers have isolated 5252 port. But let's make our lives easier.
+    depends_on:
+      backend: # This ensures backend starts before frontend
+          condition: service_healthy  # Wait for backend to pass healthcheck before starting frontend
