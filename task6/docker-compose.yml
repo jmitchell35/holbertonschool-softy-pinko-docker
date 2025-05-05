@@ -1,0 +1,35 @@
+services: # One service = One container
+
+  proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - 80:80 # HOST_PORT = APP_PORT = MACHINE_PORT : CONTAINER_PORT = INTERNAL_PORT
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+  back-end: # Each container has its own set of ports (INTERNAL = RIGHT)
+    build:
+      context: ./back-end  # Directory containing Dockerfile
+      dockerfile: Dockerfile  # Name of the Dockerfile (optional if named "Dockerfile")
+    ports:
+      - "5252" # Removed host_port : you don't want to expose ports except container ports to proxy routes
+    healthcheck: # healthchecks are made before starting frontend up to four tries total
+      test: ["CMD", "curl", "-f", "http://localhost:5252/api/hello"] # test proceedure is a curl request !!! ROUTE HAS TO EXIST !!!
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
+  front-end:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    ports:
+      - "9000" # Removed host_port : you don't want to expose ports except container ports to proxy routes
+    depends_on:
+      backend: # This ensures backend starts before frontend
+          condition: service_healthy  # Wait for backend to pass healthcheck before starting frontend
