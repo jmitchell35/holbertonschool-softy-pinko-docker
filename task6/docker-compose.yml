@@ -7,9 +7,9 @@ services: # One service = One container
     ports:
       - 80:80 # HOST_PORT = APP_PORT = MACHINE_PORT : CONTAINER_PORT = INTERNAL_PORT
     depends_on:
-      backend:
+      back-end:
         condition: service_healthy
-      frontend:
+      front-end:
         condition: service_started
 
   back-end: # Each container has its own set of ports (INTERNAL = RIGHT)
@@ -31,5 +31,5 @@ services: # One service = One container
     ports:
       - "9000" # Removed host_port : you don't want to expose ports except container ports to proxy routes
     depends_on:
-      backend: # This ensures backend starts before frontend
+      back-end: # This ensures backend starts before frontend
           condition: service_healthy  # Wait for backend to pass healthcheck before starting frontend
